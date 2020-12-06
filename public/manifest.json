@@ -1,0 +1,10 @@
+{
+  "name": "demo",
+  "short_name": "demo",
+  "manifest_version": 2,
+  "version": "1.0",
+  "browser_action": {
+    "default_popup": "index.html",
+    "default_icon": "logo512.png"
+  }
+}
