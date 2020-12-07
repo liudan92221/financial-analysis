@@ -41,6 +41,8 @@ const reactRefreshOverlayEntry = require.resolve(
   'react-dev-utils/refreshOverlayInterop'
 );
 
+const { getThemeVariables } = require('antd/dist/theme');
+
 // Some apps do not need the benefits of saving a web request, so not inlining the chunk
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false';
@@ -138,6 +140,18 @@ module.exports = function (webpackEnv) {
       },
     ].filter(Boolean);
     if (preProcessor) {
+      const options = {
+        sourceMap: true,
+      }
+      if (preProcessor === 'less-loader') {
+        options.lessOptions = { // 如果使用less-loader@5，请移除 lessOptions 这一级直接配置选项。
+          modifyVars: getThemeVariables({
+            dark: true, // 开启暗黑模式
+            compact: true, // 开启紧凑模式
+          }),
+          javascriptEnabled: true,
+        }
+      }
       loaders.push(
         {
           loader: require.resolve('resolve-url-loader'),
@@ -148,9 +162,7 @@ module.exports = function (webpackEnv) {
         },
         {
           loader: require.resolve(preProcessor),
-          options: {
-            sourceMap: true,
-          },
+          options: options,
         }
       );
     }
@@ -766,6 +778,7 @@ module.exports = function (webpackEnv) {
       net: 'empty',
       tls: 'empty',
       child_process: 'empty',
+      chrome: 'mock',
     },
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter

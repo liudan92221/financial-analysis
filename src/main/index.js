@@ -1,38 +1,10 @@
-import { Form, Input, DatePicker, Row, Col, Button } from 'antd';
+import { useState } from 'react';
+import { Form, Input, DatePicker, Row, Col, Button, message } from 'antd';
 import moment from 'moment';
+import util from '../util/index'
+import FinanceTable from '../component/FinanceTable'
 
 const { RangePicker } = DatePicker;
-
-function paramFormat(param) {
-  let str = '?'
-  for (let k in param) {
-    str += k + '=' + param[k] + '&'
-  }
-  return str.slice(0, str.length - 1)
-}
-
-function getData({
-  scode,
-  sdate,
-  edate
-}) {
-  return fetch(`http://webapi.cninfo.com.cn/api/stock/p_stock2300${paramFormat({
-    scode: scode,
-    type: '071001',
-    source: '033003',
-    sdate: sdate,
-    edate: edate,
-    access_token: ''
-  })}`, {
-    method: 'GET',
-    // credentials: 'include',
-    // mode: 'cors',
-  }).then((data) => {
-    return data.json()
-  }).then((data) => {
-    return data
-  })
-}
 
 const dateFormat = 'YYYY';
 
@@ -41,6 +13,13 @@ const startDate = moment(endDate.format('YYYY') - 5, dateFormat)
 
 function Main() {
   const [form] = Form.useForm()
+  const [dataSource, setDataSource] = useState(() => {
+    return []
+  })
+  const [title, setTitle] = useState(() => {
+    return ''
+  })
+
   return (
     <div className="main">
       <div className="">
@@ -88,17 +67,25 @@ function Main() {
                   if (scode && date[0] && date[1]) {
                     const sdate = date[0].format('YYYY') + '0101'
                     const edate = date[1].format('YYYY') + '1231'
-                    getData({
-                      scode,
-                      sdate,
-                      edate
-                    }).then((data) => {
-                      console.log(data)
+                    util.getToken().then((token) => {
+                      util.getFinanceData({
+                        scode,
+                        sdate,
+                        edate,
+                        token
+                      }).then((data) => {
+                        const fData = util.dataFormat(data)
+                        const item = fData[0] || {}
+                        setTitle(item.SECNAME)
+                        setDataSource(util.dataFormat(data))
+                      }).catch(() => {
+                        message.error('查询失败')
+                      })
                     })
                   }
                 }}
               >
-                资产负债表分析
+                查询
               </Button>
               <Button
                 type="primary"
@@ -111,6 +98,12 @@ function Main() {
             </Col>
           </Row>
         </Form>
+      </div>
+      <div>
+        <FinanceTable
+          title={title}
+          dataSource={dataSource}
+        />
       </div>
     </div>
   );

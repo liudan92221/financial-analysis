@@ -1,10 +1,13 @@
 {
-  "name": "demo",
-  "short_name": "demo",
+  "name": "财报分析",
   "manifest_version": 2,
   "version": "1.0",
   "browser_action": {
     "default_popup": "index.html",
     "default_icon": "logo512.png"
-  }
+  },
+  "permissions": [
+    "storage",
+    "http://webapi.cninfo.com.cn/"
+  ]
 }
