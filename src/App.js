@@ -1,8 +1,6 @@
 import { Tabs } from 'antd';
 import Main from './main'
 import My from './my'
-// import 'antd/dist/antd.dark.css';
-// import 'antd/dist/antd.compact.css';
 import './App.less';
 
 const { TabPane } = Tabs;

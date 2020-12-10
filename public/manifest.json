@@ -3,11 +3,16 @@
   "manifest_version": 2,
   "version": "1.0",
   "browser_action": {
-    "default_popup": "index.html",
+    "default_popup": "popup.html",
     "default_icon": "logo512.png"
+  },
+  "background": {
+    "page": "index.html",
+    "persistent": false
   },
   "permissions": [
     "storage",
+    "tabs",
     "http://webapi.cninfo.com.cn/"
   ]
 }
