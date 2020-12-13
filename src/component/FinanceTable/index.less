@@ -1,6 +1,21 @@
 .finance-table {
+  background-color: #000;
+  .table-title {
+    position: relative;
+  }
+  .table-down-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    &.ant-btn-loading {
+      position: absolute;
+    }
+  }
   .table-card {
     margin-bottom: 10px;
+  }
+  .table-tips {
+    float: left;
   }
   .table-text-area {
     margin-top: 10px;
@@ -10,7 +25,7 @@
       font-weight: bold;
     }
     .text {
-      height: 32px;
+      // height: 32px;
       line-height: 32px;
       .bold {
         font-weight: bold;
