@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Typography, Tooltip, Divider } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import html2canvas from 'html2canvas'
-import { fkeyArr, pKeyArr, cKeyArr, assetsMap, numberToThousands } from './config'
+import { nameMap, fKeyArr, pKeyArr, cKeyArr, assetsMap, numberToThousands } from './config'
 
 const { Paragraph, Text } = Typography;
 const DefaultWidth = 140
@@ -35,7 +35,7 @@ function defaultColumns(item) {
 }
 function getFColumns() {
   const columns = []
-  for(let item of fkeyArr) {
+  for(let item of fKeyArr) {
     columns.push(defaultColumns(item))
   }
   return columns
@@ -202,22 +202,22 @@ function getAssetsAnalysisData(arr, data) {
 
 // const assetsAnalysisColums = getAssetsAnalysisColums()
 
-function getAssetsAnalysisRenderData(data) {
+function getAssetsAnalysisRenderData(data, columnMap) {
   const list = [
     {
-      title: '资产负债表',
+      title: nameMap.f,
       type: 'f',
-      columns: fColumns
+      columns: fColumns.concat(columnMap.fColumn)
     },
     {
-      title: '利润表',
+      title: nameMap.p,
       type: 'p',
-      columns: pColumns
+      columns: pColumns.concat(columnMap.pColumn)
     },
     {
-      title: '现金流量表',
+      title: nameMap.c,
       type: 'c',
-      columns: cColumns
+      columns: cColumns.concat(columnMap.cColumn)
     },
   ]
   for(let item of assetsMap) {
@@ -237,8 +237,8 @@ const util = {
   // getAssetsAnalysisColums() {
   //   return assetsAnalysisColums
   // },
-  getAssetsAnalysisList(data) {
-    return getAssetsAnalysisRenderData(data)
+  getAssetsAnalysisList(data, columnMap) {
+    return getAssetsAnalysisRenderData(data, columnMap)
   },
 
   filterData(data = []) {
@@ -351,6 +351,10 @@ const util = {
     }
   },
 
+  getName(title, code) {
+    return `${title}(${code})`
+  },
+
   getToken() {
     return util.getKey().then((keys) => {
       return util.fetch('http://webapi.cninfo.com.cn/api-cloud-platform/oauth2/token', {
@@ -456,7 +460,7 @@ const util = {
   setLocalData(data) {
     return new Promise((resolve) => {
       window.localStorage.setItem('table_data', JSON.stringify(data))
-      resolve()
+      resolve(data)
     })
   },
   getLocalData() {
@@ -470,6 +474,37 @@ const util = {
         console.error(err)
       }
       resolve(data)
+    })
+  },
+  setItemData(title, code, type, item) {
+    const map = {
+      f: 'fData',
+      p: 'pData',
+      c: 'cData',
+    }
+    return util.getLocalData().then((data) => {
+      const name = util.getName(title, code)
+      const itemData = data[name] || {
+        name: name,
+        title: title,
+        code: code,
+      }
+      const typeData = itemData[map[type]] || []
+      let notOldData = true
+      for (let i = 0;i < typeData.length; i++) {
+        const rowData = typeData[i]
+        if (rowData.ENDDATE === item.ENDDATE) {
+          typeData[i] = item
+          notOldData = false
+          break
+        }
+      }
+      if (notOldData) {
+        typeData.push(item)
+      }
+      itemData[map[type]] = typeData
+      data[name] = itemData
+      return util.setLocalData(data)
     })
   },
 
@@ -535,18 +570,19 @@ export const useGetFinanceData = () => {
         if (!localData) {
           localData = {}
         }
-        localData[`${title}(${code})`] = {
-          name: `${title}(${code})`,
+        const name = util.getName(title, code)
+        localData[name] = {
+          name: name,
           title: title,
           code: code,
           fData: util.filterData(fData),
           pData: util.filterData(pData),
           cData: util.filterData(cData),
         }
-        setTableData(localData[`${title}(${code})`])
+        setTableData(localData[name])
         util.setLocalData(localData)
         setLoading(false)
-        return localData[`${title}(${code})`]
+        return localData[name]
       })
     }).catch((err) => {
       setError(err)

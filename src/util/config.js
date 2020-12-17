@@ -1,14 +1,24 @@
-import _fKeyArr from './fKeyData'
-import _pKeyArr, { pKeyMap } from './pKeyData'
-import _cKeyArr from './cKeyData'
+import _fKeyArr, { fNameMap, fKeyMap } from './fKeyData'
+import _pKeyArr, { pNameMap, pKeyMap } from './pKeyData'
+import _cKeyArr, { cNameMap, cKeyMap } from './cKeyData'
 
-export const fkeyArr = _fKeyArr
+export const nameMap = {
+  f: '资产负债表',
+  p: '利润表',
+  c: '现金流量表',
+}
+
+export const fKeyArr = _fKeyArr
 export const pKeyArr = _pKeyArr
 export const cKeyArr = _cKeyArr
 
-export const keyMap = {}
-for(const item of fkeyArr) {
-  keyMap[item.alias] = item
+export const keyMap = {
+  fNameMap,
+  fKeyMap,
+  pNameMap,
+  pKeyMap,
+  cNameMap,
+  cKeyMap,
 }
 
 export const numberToThousands = (_num) => {
@@ -35,11 +45,11 @@ export const numberToThousands = (_num) => {
 
 const endDate = {
   title: '截止日期',
-  key: keyMap['截止日期'].keywordName,
+  key: fNameMap['截止日期'].keywordName,
   describe: [],
   type: 'string',
   algorithm(record) {
-    const value = record[keyMap['截止日期'].keywordName] || ''
+    const value = record[fNameMap['截止日期'].keywordName] || ''
     return {
       value
     }
@@ -48,11 +58,11 @@ const endDate = {
 
 const totalAssets = {
   title: '资产总计',
-  key: keyMap['资产总计'].keywordName,
+  key: fNameMap['资产总计'].keywordName,
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['资产总计'].keywordName] || 0
+    const value = record[fNameMap['资产总计'].keywordName] || 0
     return {
       value
     }
@@ -61,29 +71,29 @@ const totalAssets = {
 
 const businessAssets = {
   title: '企业经营有关的资产',
-  key: keyMap['资产总计'].keywordName,
+  key: fNameMap['资产总计'].keywordName,
   tips: '企业经营有关的资产',
   describe: [],
   description: '货币资金 + 交易性金融资产 + 其他流动资产里的理财产品 + 其他流动资产里的结构性存款 + 应收票据 + 应收账款 + 应收款项融资 + 预付款项 + 存货 + 合同资产 + 长期应收款 + 固定资产 + 在建工程 + 使用权资产 + 无形资产 + 开发支出 + 长期待摊费用 + 递延所得税资产',
   type: 'number',
   algorithm(record) {
-    const value1 = (record[keyMap['货币资金'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['交易性金融资产'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['其他流动资产'].keywordName] || 0) * 100
-    const value4 = (record[keyMap['应收票据'].keywordName] || 0) * 100
-    const value5 = (record[keyMap['应收账款'].keywordName] || 0) * 100
-    const value6 = (record[keyMap['应收款项融资'].keywordName] || 0) * 100
-    const value7 = (record[keyMap['预付款项'].keywordName] || 0) * 100
-    const value8 = (record[keyMap['存货'].keywordName] || 0) * 100
-    const value9 = (record[keyMap['合同资产'].keywordName] || 0) * 100
-    const value10 = (record[keyMap['长期应收款'].keywordName] || 0) * 100
-    const value11 = (record[keyMap['固定资产'].keywordName] || 0) * 100
-    const value12 = (record[keyMap['在建工程'].keywordName] || 0) * 100
-    const value13 = (record[keyMap['使用权资产'].keywordName] || 0) * 100
-    const value14 = (record[keyMap['无形资产'].keywordName] || 0) * 100
-    const value15 = (record[keyMap['开发支出'].keywordName] || 0) * 100
-    const value16 = (record[keyMap['长期待摊费用'].keywordName] || 0) * 100
-    const value17 = (record[keyMap['递延所得税资产'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['货币资金'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['交易性金融资产'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['其他流动资产'].keywordName] || 0) * 100
+    const value4 = (record[fNameMap['应收票据'].keywordName] || 0) * 100
+    const value5 = (record[fNameMap['应收账款'].keywordName] || 0) * 100
+    const value6 = (record[fNameMap['应收款项融资'].keywordName] || 0) * 100
+    const value7 = (record[fNameMap['预付款项'].keywordName] || 0) * 100
+    const value8 = (record[fNameMap['存货'].keywordName] || 0) * 100
+    const value9 = (record[fNameMap['合同资产'].keywordName] || 0) * 100
+    const value10 = (record[fNameMap['长期应收款'].keywordName] || 0) * 100
+    const value11 = (record[fNameMap['固定资产'].keywordName] || 0) * 100
+    const value12 = (record[fNameMap['在建工程'].keywordName] || 0) * 100
+    const value13 = (record[fNameMap['使用权资产'].keywordName] || 0) * 100
+    const value14 = (record[fNameMap['无形资产'].keywordName] || 0) * 100
+    const value15 = (record[fNameMap['开发支出'].keywordName] || 0) * 100
+    const value16 = (record[fNameMap['长期待摊费用'].keywordName] || 0) * 100
+    const value17 = (record[fNameMap['递延所得税资产'].keywordName] || 0) * 100
     return {
       value: ((value1 + value2 + value3 + value4 + value5 + value6 + value7 + value8 + value9 + value10 + value11 + value12 + value13 + value14 + value15 + value16 + value17) / 100).toFixed(2)
     }
@@ -92,7 +102,7 @@ const businessAssets = {
 
 const businessAssetsRate = {
   title: '企业经营有关的资产 / 资产总计',
-  key: keyMap['资产总计'].keywordName,
+  key: fNameMap['资产总计'].keywordName,
   tips: '企业经营有关的资产 / 资产总计',
   describe: [
     '>90% 专注主业，资产质量较好',
@@ -116,7 +126,7 @@ const businessAssetsRate = {
 
 const totalAssetsGrowthRate = {
   title: '总资产增长率',
-  key: keyMap['资产总计'].keywordName,
+  key: fNameMap['资产总计'].keywordName,
   tips: '(本年资产总计 - 上年资产总计) / 本年资产总计',
   describe: [
     '>10% 公司在扩张之中，成长性较好',
@@ -124,10 +134,10 @@ const totalAssetsGrowthRate = {
   ],
   type: 'percentage',
   algorithm(record) {
-    const value1 = (record[keyMap['资产总计'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['资产总计'].keywordName] || 0) * 100
     let value2 = '--'
     if (record.prevYear) {
-      value2 = (record.prevYear[keyMap['资产总计'].keywordName] || 0) * 100
+      value2 = (record.prevYear[fNameMap['资产总计'].keywordName] || 0) * 100
     }
     if (value2 === '--') {
       return {
@@ -150,12 +160,12 @@ const totalAssetsGrowthRate = {
 
 const debt = {
   title: '负债合计',
-  key: keyMap['负债合计'].keywordName,
+  key: fNameMap['负债合计'].keywordName,
   tips: '',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['负债合计'].keywordName] || 0
+    const value = record[fNameMap['负债合计'].keywordName] || 0
     return {
       value: value,
     }
@@ -164,7 +174,7 @@ const debt = {
 
 const debtRate = {
   title: '资产负债率',
-  key: keyMap['负债合计'].keywordName,
+  key: fNameMap['负债合计'].keywordName,
   tips: '负债合计 / 资产总计',
   describe: [
     '<40% 基本没有偿债风险',
@@ -173,8 +183,8 @@ const debtRate = {
   ],
   type: 'percentage',
   algorithm(record) {
-    const value1 = (record[keyMap['资产总计'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['负债合计'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['资产总计'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['负债合计'].keywordName] || 0) * 100
     const value = (value2 / value1 * 100).toFixed(2)
     let type = 3
     if (value < 40) {
@@ -191,15 +201,15 @@ const debtRate = {
 
 const quasiMonetaryFunds = {
   title: '准货币资金',
-  key: keyMap['货币资金'].keywordName,
+  key: fNameMap['货币资金'].keywordName,
   tips: '准货币资金',
   describe: [],
   description: '货币资金 + 交易性金融资产 + 其他流动资产',
   type: 'number',
   algorithm(record) {
-    const value1 = (record[keyMap['货币资金'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['交易性金融资产'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['其他流动资产'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['货币资金'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['交易性金融资产'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['其他流动资产'].keywordName] || 0) * 100
     return {
       value: ((value1 + value2 + value3) / 100).toFixed(2),
     }
@@ -208,7 +218,7 @@ const quasiMonetaryFunds = {
 
 const quasiMonetaryFundsRate = {
   title: '准货币资金 / 资产总计',
-  key: keyMap['资产总计'].keywordName,
+  key: fNameMap['资产总计'].keywordName,
   tips: '准货币资金 / 资产总计',
   describe: [
     '>50% 最好的公司',
@@ -235,12 +245,12 @@ const quasiMonetaryFundsRate = {
 
 const accountsReceivable = {
   title: '应收账款',
-  key: keyMap['应收账款'].keywordName,
+  key: fNameMap['应收账款'].keywordName,
   tips: '',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['应收账款'].keywordName] || 0
+    const value = record[fNameMap['应收账款'].keywordName] || 0
     return {
       value: value,
     }
@@ -249,7 +259,7 @@ const accountsReceivable = {
 
 const accountsReceivableRate = {
   title: '应收账款 / 资产总计',
-  key: keyMap['应付票据'].keywordName,
+  key: fNameMap['应付票据'].keywordName,
   tips: '应收账款 / 资产总计',
   describe: [
     '<1% 最好的公司',
@@ -279,7 +289,7 @@ const accountsReceivableRate = {
 
 const accountsReceivableRateFake = {
   title: '应收账款 / 资产总计',
-  key: keyMap['应收账款'].keywordName,
+  key: fNameMap['应收账款'].keywordName,
   tips: '应收账款 / 资产总计',
   describe: [
     '<15% 应收账款造假的风险较小',
@@ -301,17 +311,17 @@ const accountsReceivableRateFake = {
 
 const interestingDebt = {
   title: '有息负债',
-  key: keyMap['短期借款'].keywordName,
+  key: fNameMap['短期借款'].keywordName,
   tips: '有息负债',
   describe: [],
   description: '短期借款 + 一年内到期的非流动负债 + 长期借款 + 应付债券 + 长期应付款',
   type: 'number',
   algorithm(record) {
-    const value1 = (record[keyMap['短期借款'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['一年内到期的非流动负债'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['长期借款'].keywordName] || 0) * 100
-    const value4 = (record[keyMap['应付债券'].keywordName] || 0) * 100
-    const value5 = (record[keyMap['长期应付款'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['短期借款'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['一年内到期的非流动负债'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['长期借款'].keywordName] || 0) * 100
+    const value4 = (record[fNameMap['应付债券'].keywordName] || 0) * 100
+    const value5 = (record[fNameMap['长期应付款'].keywordName] || 0) * 100
     return {
       value: ((value1 + value2 + value3 + value4 + value5) / 100).toFixed(2),
     }
@@ -320,7 +330,7 @@ const interestingDebt = {
 
 const solvency = {
   title: '准货币资金 - 有息负债',
-  key: keyMap['交易性金融资产'].keywordName,
+  key: fNameMap['交易性金融资产'].keywordName,
   tips: '准货币资金 - 有息负债',
   describe: [
     '>0 无偿债压力',
@@ -345,17 +355,17 @@ const solvency = {
 
 const payableAdvance = {
   title: '应付预收',
-  key: keyMap['应付账款'].keywordName,
+  key: fNameMap['应付账款'].keywordName,
   tips: '应付账款 + 应付票据 + 预收款项 + 合同负债',
   describe: [
     '金额越大，代表公司竞争力越强，行业地位越高',
   ],
   type: 'number',
   algorithm(record) {
-    const value1 = (record[keyMap['应付账款'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['应付票据'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['预收款项'].keywordName] || 0) * 100
-    const value4 = (record[keyMap['合同负债'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['应付账款'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['应付票据'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['预收款项'].keywordName] || 0) * 100
+    const value4 = (record[fNameMap['合同负债'].keywordName] || 0) * 100
     return {
       value: ((value1 + value2 + value3 + value4) / 100).toFixed(2),
     }
@@ -364,12 +374,12 @@ const payableAdvance = {
 
 const prepayments = {
   title: '预付款项',
-  key: keyMap['预付款项'].keywordName,
+  key: fNameMap['预付款项'].keywordName,
   tips: '预付款项',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = (record[keyMap['预付款项'].keywordName] || 0) * 100
+    const value = (record[fNameMap['预付款项'].keywordName] || 0) * 100
     return {
       value: (value / 100).toFixed(2),
     }
@@ -378,7 +388,7 @@ const prepayments = {
 
 const prepaymentsRate = {
   title: '预付款项 / 资产总计',
-  key: keyMap['预付款项'].keywordName,
+  key: fNameMap['预付款项'].keywordName,
   tips: '预付款项 / 资产总计',
   describe: [
     '<1% 公司实力强，信用好，风险较小',
@@ -405,12 +415,12 @@ const prepaymentsRate = {
 
 const otherAccountsReceivable = {
   title: '其他应收款',
-  key: keyMap['其他应收款'].keywordName,
+  key: fNameMap['其他应收款'].keywordName,
   tips: '其他应收款',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['其他应收款'].keywordName] || 0
+    const value = record[fNameMap['其他应收款'].keywordName] || 0
     return {
       value: value,
     }
@@ -419,7 +429,7 @@ const otherAccountsReceivable = {
 
 const prepaymentsRateFake = {
   title: '(预付款项 + 其他应收款) / 资产总计',
-  key: keyMap['预付款项'].keywordName,
+  key: fNameMap['预付款项'].keywordName,
   tips: '(预付款项 + 其他应收款) / 资产总计',
   describe: [
     '<10% 造假的可能性较小',
@@ -444,18 +454,18 @@ const prepaymentsRateFake = {
 
 const prepaidReceivable = {
   title: '应收预付',
-  key: keyMap['应收账款'].keywordName,
+  key: fNameMap['应收账款'].keywordName,
   tips: '应收账款 + 应收票据 + 预付款项 + 合同资产 + 应收款项融资',
   describe: [
     '金额越小，代表公司竞争力越强，行业地位越高',
   ],
   type: 'number',
   algorithm(record) {
-    const value1 = (record[keyMap['应收账款'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['应收票据'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['预付款项'].keywordName] || 0) * 100
-    const value4 = (record[keyMap['合同资产'].keywordName] || 0) * 100
-    const value5 = (record[keyMap['应收款项融资'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['应收账款'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['应收票据'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['预付款项'].keywordName] || 0) * 100
+    const value4 = (record[fNameMap['合同资产'].keywordName] || 0) * 100
+    const value5 = (record[fNameMap['应收款项融资'].keywordName] || 0) * 100
     return {
       value: ((value1 + value2 + value3 + value4 + value5) / 100).toFixed(2),
     }
@@ -464,7 +474,7 @@ const prepaidReceivable = {
 
 const competition = {
   title: '应付预收 - 应收预付',
-  key: keyMap['应付票据'].keywordName,
+  key: fNameMap['应付票据'].keywordName,
   tips: '应付预收 - 应收预付',
   describe: [
     '>0 公司竞争力较强，具有“两头吃”的能力',
@@ -488,12 +498,12 @@ const competition = {
 
 const contractAssets = {
   title: '合同资产',
-  key: keyMap['合同资产'].keywordName,
+  key: fNameMap['合同资产'].keywordName,
   tips: '',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['合同资产'].keywordName] || 0
+    const value = record[fNameMap['合同资产'].keywordName] || 0
     return {
       value: value,
     }
@@ -502,7 +512,7 @@ const contractAssets = {
 
 const productSales = {
   title: '(应收账款 + 合同资产) / 资产总计',
-  key: keyMap['合同资产'].keywordName,
+  key: fNameMap['合同资产'].keywordName,
   tips: '判断产品竞争力 (应收账款 + 合同资产) / 资产总计 > 15% 就可以淘汰了',
   describe: [
     '<1% 最好的公司，公司产品很畅销',
@@ -512,9 +522,9 @@ const productSales = {
   ],
   type: 'percentage',
   algorithm(record) {
-    const value1 = (record[keyMap['应收账款'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['合同资产'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['资产总计'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['应收账款'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['合同资产'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['资产总计'].keywordName] || 0) * 100
     const value = ((value1 + value2) / value3 * 100).toFixed(2)
     let type = 3
     if (value < 1) {
@@ -533,12 +543,12 @@ const productSales = {
 
 const fixedAssets = {
   title: '固定资产',
-  key: keyMap['固定资产'].keywordName,
+  key: fNameMap['固定资产'].keywordName,
   tips: '',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['固定资产'].keywordName] || 0
+    const value = record[fNameMap['固定资产'].keywordName] || 0
     return {
       value: value,
     }
@@ -547,7 +557,7 @@ const fixedAssets = {
 
 const fixedAssetsRate = {
   title: '固定资产 / 资产总计',
-  key: keyMap['固定资产'].keywordName,
+  key: fNameMap['固定资产'].keywordName,
   tips: '固定资产 / 资产总计',
   describe: [
     '<40% 轻资产型企业，经营风险较小',
@@ -571,12 +581,12 @@ const fixedAssetsRate = {
 
 const constructionProgress = {
   title: '在建工程',
-  key: keyMap['在建工程'].keywordName,
+  key: fNameMap['在建工程'].keywordName,
   tips: '',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['在建工程'].keywordName] || 0
+    const value = record[fNameMap['在建工程'].keywordName] || 0
     return {
       value: value,
     }
@@ -585,7 +595,7 @@ const constructionProgress = {
 
 const assetType = {
   title: '(固定资产 + 在建工程) / 资产总计',
-  key: keyMap['合同资产'].keywordName,
+  key: fNameMap['合同资产'].keywordName,
   tips: '判断公司类型 (固定资产 + 在建工程) / 资产总计 > 50% 一律淘汰',
   describe: [
     '<20% 通常情况下选择 小于20% 的公司',
@@ -594,9 +604,9 @@ const assetType = {
   ],
   type: 'percentage',
   algorithm(record) {
-    const value1 = (record[keyMap['固定资产'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['在建工程'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['资产总计'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['固定资产'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['在建工程'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['资产总计'].keywordName] || 0) * 100
     const value = ((value1 + value2) / value3 * 100).toFixed(2)
     let type = 3
     if (value < 20) {
@@ -613,13 +623,13 @@ const assetType = {
 
 const constructionProgressTotalAssets = {
   title: '在建工程 / 资产总计',
-  key: keyMap['合同资产'].keywordName,
+  key: fNameMap['合同资产'].keywordName,
   tips: '在建工程 / 资产总计',
   describe: [],
   type: 'percentage',
   algorithm(record) {
-    const value1 = (record[keyMap['在建工程'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['资产总计'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['在建工程'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['资产总计'].keywordName] || 0) * 100
     const value = (value1 / value2 * 100).toFixed(2)
     return {
       value: value,
@@ -629,7 +639,7 @@ const constructionProgressTotalAssets = {
 
 const investmentRatio = {
   title: '投资类资产比率',
-  key: keyMap['其他权益工具投资'].keywordName,
+  key: fNameMap['其他权益工具投资'].keywordName,
   tips: '(其他权益工具投资 + 债权投资 + 其他债权投资 + 其他非流动金融资产 + 可供出售金融资产 + 持有至到期投资 + 长期股权投资 + 投资性房地产) / 资产总计',
   describe: [
     '<10% 专注于主业，属于优秀的公司',
@@ -637,15 +647,15 @@ const investmentRatio = {
   ],
   type: 'percentage',
   algorithm(record) {
-    const value1 = (record[keyMap['其他权益工具投资'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['债权投资'].keywordName] || 0) * 100
-    const value3 = (record[keyMap['其他债权投资'].keywordName] || 0) * 100
-    const value4 = (record[keyMap['其他非流动金融资产'].keywordName] || 0) * 100
-    const value5 = (record[keyMap['可供出售金融资产'].keywordName] || 0) * 100
-    const value6 = (record[keyMap['持有至到期投资'].keywordName] || 0) * 100
-    const value7 = (record[keyMap['长期股权投资'].keywordName] || 0) * 100
-    const value8 = (record[keyMap['投资性房地产'].keywordName] || 0) * 100
-    const value9 = (record[keyMap['资产总计'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['其他权益工具投资'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['债权投资'].keywordName] || 0) * 100
+    const value3 = (record[fNameMap['其他债权投资'].keywordName] || 0) * 100
+    const value4 = (record[fNameMap['其他非流动金融资产'].keywordName] || 0) * 100
+    const value5 = (record[fNameMap['可供出售金融资产'].keywordName] || 0) * 100
+    const value6 = (record[fNameMap['持有至到期投资'].keywordName] || 0) * 100
+    const value7 = (record[fNameMap['长期股权投资'].keywordName] || 0) * 100
+    const value8 = (record[fNameMap['投资性房地产'].keywordName] || 0) * 100
+    const value9 = (record[fNameMap['资产总计'].keywordName] || 0) * 100
     const value10 = value1 + value2 + value3 + value4 + value5 + value6 + value7 + value8
     const value = (value10 / value9 * 100).toFixed(2)
     let type = 3
@@ -661,12 +671,12 @@ const investmentRatio = {
 
 const stock = {
   title: '存货',
-  key: keyMap['存货'].keywordName,
+  key: fNameMap['存货'].keywordName,
   tips: '',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['存货'].keywordName] || 0
+    const value = record[fNameMap['存货'].keywordName] || 0
     return {
       value: value,
     }
@@ -675,7 +685,7 @@ const stock = {
 
 const competitionAndAccountsReceivableRate = {
   title: '(应付预收 - 应收预付) & 应收账款 / 资产总计',
-  key: keyMap['应付票据'].keywordName,
+  key: fNameMap['应付票据'].keywordName,
   tips: '(应付预收 - 应收预付) & 应收账款 / 资产总计',
   describe: [
     '(应付预收 - 应收预付) > 0 & 应收账款 / 资产总计 < 1% 无暴雷风险',
@@ -698,7 +708,7 @@ const competitionAndAccountsReceivableRate = {
 
 const stockReceivableRate = {
   title: '存货 / 资产总计',
-  key: keyMap['存货'].keywordName,
+  key: fNameMap['存货'].keywordName,
   tips: '存货 / 资产总计',
   describe: [],
   type: 'percentage',
@@ -714,7 +724,7 @@ const stockReceivableRate = {
 
 const stockAndAccountsReceivableRate = {
   title: '应收账款 / 资产总计 & 存货 / 资产总计',
-  key: keyMap['应付票据'].keywordName,
+  key: fNameMap['应付票据'].keywordName,
   tips: '应收账款 / 资产总计 & 存货 / 资产总计',
   describe: [
     '应收账款 / 资产总计 < 5% or 存货 / 资产总计 < 15% 无暴雷风险',
@@ -737,12 +747,12 @@ const stockAndAccountsReceivableRate = {
 
 const goodwill = {
   title: '商誉',
-  key: keyMap['商誉'].keywordName,
+  key: fNameMap['商誉'].keywordName,
   tips: '商誉',
   describe: [],
   type: 'number',
   algorithm(record) {
-    const value = record[keyMap['商誉'].keywordName] || 0
+    const value = record[fNameMap['商誉'].keywordName] || 0
     return {
       value: value,
     }
@@ -751,7 +761,7 @@ const goodwill = {
 
 const goodwillRate = {
   title: '商誉 / 资产总计',
-  key: keyMap['商誉'].keywordName,
+  key: fNameMap['商誉'].keywordName,
   tips: '商誉 / 资产总计',
   describe: [
     '<10% 无暴雷风险',
@@ -759,8 +769,8 @@ const goodwillRate = {
   ],
   type: 'percentage',
   algorithm(record) {
-    const value1 = (record[keyMap['商誉'].keywordName] || 0) * 100
-    const value2 = (record[keyMap['资产总计'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['商誉'].keywordName] || 0) * 100
+    const value2 = (record[fNameMap['资产总计'].keywordName] || 0) * 100
     const value = ((value1 / value2) * 100).toFixed(2)
     let type = 3
     if (value < 10) {
@@ -775,16 +785,16 @@ const goodwillRate = {
 
 const averageMonetaryFunds = {
   title: '平均货币资金',
-  key: keyMap['货币资金'].keywordName,
+  key: fNameMap['货币资金'].keywordName,
   tips: '平均货币资金',
   describe: [],
   description: '货币资金的期末数 + 货币资金的期初数',
   type: 'number',
   algorithm(record) {
-    const value1 = (record[keyMap['货币资金'].keywordName] || 0) * 100
+    const value1 = (record[fNameMap['货币资金'].keywordName] || 0) * 100
     let value2 = '--'
     if (record.prevYear) {
-      value2 = (record.prevYear[keyMap['货币资金'].keywordName] || 0) * 100
+      value2 = (record.prevYear[fNameMap['货币资金'].keywordName] || 0) * 100
     }
     let value = value1
     if (value2 !== '--') {
@@ -797,16 +807,15 @@ const averageMonetaryFunds = {
 }
 
 const interestIncome = {
-  title: '利息收入(用“财务费用”代替)',
-  key: keyMap['货币资金'].keywordName,
-  tips: '利息收入(用“财务费用”代替)',
+  title: '财务费用：利息收入',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '财务费用：利息收入',
   describe: [],
-  description: '用“财务费用”代替，费用为负数为收入，真实利息收入会小于财富费用',
   type: 'number',
   algorithm(record) {
     let value = '--'
     if (record.pData) {
-      value = record.pData[pKeyMap['财务费用'].keywordName] || 0
+      value = record.pData[pNameMap['财务费用：利息收入'].keywordName] || 0
     }
     return {
       value: value,
@@ -815,15 +824,15 @@ const interestIncome = {
 }
 
 const interestExpenditure = {
-  title: '利息支出',
-  key: keyMap['货币资金'].keywordName,
-  tips: '利息支出',
+  title: '财务费用：利息支出',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '财务费用：利息支出',
   describe: [],
   type: 'number',
   algorithm(record) {
     let value = '--'
     if (record.pData) {
-      value = record.pData[pKeyMap['利息支出'].keywordName] || 0
+      value = record.pData[pNameMap['财务费用：利息支出'].keywordName] || 0
     }
     return {
       value: value,
@@ -832,9 +841,9 @@ const interestExpenditure = {
 }
 
 const interestIncomeAverageMonetaryFunds = {
-  title: '利息收入 / 平均货币资金',
-  key: keyMap['货币资金'].keywordName,
-  tips: '利息收入 / 平均货币资金',
+  title: '财务费用：利息收入 / 平均货币资金',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '财务费用：利息收入 / 平均货币资金',
   describe: [
     '>2.5% 货币资金是可靠的',
     '2% ~ 2.5% 货币资金的真实性可能有问题',
@@ -865,14 +874,14 @@ const interestIncomeAverageMonetaryFunds = {
 
 const netProfit = {
   title: '净利润',
-  key: keyMap['货币资金'].keywordName,
+  key: fNameMap['货币资金'].keywordName,
   tips: '净利润',
   describe: [],
   type: 'number',
   algorithm(record) {
     let value = '--'
     if (record.pData) {
-      value = record.pData[pKeyMap['净利润'].keywordName] || 0
+      value = record.pData[pNameMap['净利润'].keywordName] || 0
     }
     return {
       value: value,
@@ -881,9 +890,9 @@ const netProfit = {
 }
 
 const interestExpenditureNetProfit = {
-  title: '利息支出 / 净利润',
-  key: keyMap['货币资金'].keywordName,
-  tips: '利息支出 / 净利润',
+  title: '财务费用：利息支出 / 净利润',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '财务费用：利息支出 / 净利润',
   describe: [
     '<10% 货币资金科目造假的风险相对较小',
     '>10% 货币资金的真实性很可能有问题',
@@ -911,7 +920,7 @@ const interestExpenditureNetProfit = {
 
 const monetaryFundsInterestingDebt = {
   title: '货币资金 - 有息负债',
-  key: keyMap['交易性金融资产'].keywordName,
+  key: fNameMap['交易性金融资产'].keywordName,
   tips: '货币资金 - 有息负债',
   describe: [
     '如果公司有很多货币资金，但是又有很多有息负债，每年需要支付高额利息，那么这家公司的货币资金很有可能有问题',
@@ -919,7 +928,7 @@ const monetaryFundsInterestingDebt = {
   description: '货币资金 - 有息负债',
   type: 'string',
   algorithm(record) {
-    const value1 = record[keyMap['货币资金'].keywordName] || 0
+    const value1 = record[fNameMap['货币资金'].keywordName] || 0
     const value2 = interestingDebt.algorithm(record).value
     const value = (value1 - value2).toFixed(2)
     return {
@@ -930,7 +939,7 @@ const monetaryFundsInterestingDebt = {
 
 const constructionProgressFake = {
   title: '应收账款 / 资产总计 & 存货 / 资产总计',
-  key: keyMap['资产总计'].keywordName,
+  key: fNameMap['资产总计'].keywordName,
   tips: '应收账款 / 资产总计 & 存货 / 资产总计',
   describe: [
     '如果(在建工程 / 资产总计)比率有较大增幅，(应收账款 / 资产总计 < 1%)且(存货 / 资产总计 < 10%)，公司在快速增长',

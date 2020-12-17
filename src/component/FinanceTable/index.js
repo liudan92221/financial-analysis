@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Typography, Table, Collapse, Button } from 'antd';
+import EditModal from '../EditModal'
 import util from '../../util/index'
 import './index.less';
 
-const { Title } = Typography;
+const { Title, Link } = Typography;
 const { Panel } = Collapse;
 
-function useDataAndList(data) {
+const linkStyle = {marginRight: 4}
+
+function useDataAndList(data, columnMap) {
   const [dataSource, setDataSource] = useState(() => {
     return []
   })
@@ -25,9 +28,9 @@ function useDataAndList(data) {
     setDataSource(fData)
     setPData(pData)
     setCData(cData)
-    const renderList = util.getAssetsAnalysisList(fData)
+    const renderList = util.getAssetsAnalysisList(fData, columnMap)
     setRenderList(renderList)
-  }, [data])
+  }, [data, columnMap])
 
   return {
     dataSource,
@@ -37,12 +40,86 @@ function useDataAndList(data) {
   }
 }
 
+function useEditModal() {
+  const [editVisible, setEditVisible] = useState(() => {
+    return false
+  })
+  const [modalData, setModalData] = useState(() => {
+    return {}
+  })
+  const onClick = useCallback(({type, record, index, ctrlType}) => {
+    console.log(index)
+    console.log(record)
+    setModalData({
+      type, record, index, ctrlType
+    })
+    setEditVisible(true)
+  }, [])
+  const onCancel = useCallback(() => {
+    setEditVisible(false)
+  }, [])
+  return {
+    onClick,
+    onCancel,
+    editVisible,
+    modalData
+  }
+}
+
+function useCtrlColumn(onClick) {
+  const columnMap = useMemo(() => {
+    function getColumn(type) {
+      return {
+        title: '操作',
+        width: 160,
+        dataIndex: 'action',
+        key: 'action',
+        fixed: 'right',
+        render(text, record, index) {
+          return <>
+            <Link
+              style={linkStyle}
+              onClick={() => {
+                onClick({
+                  type, record, index,
+                  ctrlType: 'edit'
+                })
+              }}
+            >
+              编辑
+            </Link>
+            <Link
+              style={linkStyle}
+              onClick={() => {
+                onClick({
+                  type, record, index,
+                  ctrlType: 'read'
+                })
+              }}
+            >
+              明细
+            </Link>
+          </>
+        }
+      }
+    }
+
+    return {
+      fColumn: getColumn('f'),
+      pColumn: getColumn('p'),
+      cColumn: getColumn('c')
+    }
+  }, [onClick])
+
+  return columnMap
+}
+
 function getID() {
   return `id-${Math.random()}`
 }
 
 function FinanceTable(props) {
-  const { title, data } = props
+  const { name, data, title, code, reload } = props
 
   const [btnLoading, setBtnLoading] = useState(() => {
     return false
@@ -52,16 +129,24 @@ function FinanceTable(props) {
   })
 
   const {
+    onClick,
+    onCancel,
+    editVisible,
+    modalData,
+  } = useEditModal()
+  const columnMap = useCtrlColumn(onClick)
+
+  const {
     dataSource,
     pData,
     cData,
     renderList,
-  } = useDataAndList(data)
+  } = useDataAndList(data, columnMap)
 
   return (
     <div id={id} className="finance-table">
       <div className="table-title">
-        <Title level={3}>{title}</Title>
+        <Title level={3}>{name}</Title>
         <Button
           className="table-down-btn"
           type="primary"
@@ -69,7 +154,7 @@ function FinanceTable(props) {
           onClick={() => {
             setBtnLoading(true)
             setTimeout(() => {
-              util.downPageImg(document.getElementById(id), title).then(() => {
+              util.downPageImg(document.getElementById(id), name).then(() => {
                 setBtnLoading(false)
               }).catch(() => {
                 setBtnLoading(false)
@@ -106,16 +191,23 @@ function FinanceTable(props) {
               {item.textArr}
             </div>
           </Panel>
-          // return <Card
-          //   className="table-card"
-          //   key={index}
-          //   title={item.title}
-          //   bordered={false}
-          // >
-            
-          // </Card>
         })}
       </Collapse> : ''}
+      <EditModal
+        record={modalData.record}
+        type={modalData.type}
+        index={modalData.index}
+        ctrlType={modalData.ctrlType}
+        visible={editVisible}
+        onCancel={onCancel}
+        onOk={onCancel}
+        onSave={({type, record}) => {
+          util.setItemData(title, code, type, record).then(() => {
+            onCancel()
+            reload()
+          })
+        }}
+      />
     </div>
   );
 }

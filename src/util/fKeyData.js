@@ -1254,4 +1254,11 @@ const keyArr = [
   }
 ]
 
+export const fNameMap = {}
+export const fKeyMap = {}
+for(const item of keyArr) {
+  fNameMap[item.alias] = item
+  fKeyMap[item.keywordName] = item
+}
+
 export default keyArr

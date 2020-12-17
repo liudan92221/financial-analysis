@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
 import { Form, Input, Row, Col, Button, message } from 'antd';
 import util from '../util/index'
+import './index.less'
 
-function Main() {
+function Set() {
   const [form] = Form.useForm()
 
   const onSet = useCallback(() => {
@@ -16,7 +17,7 @@ function Main() {
   }, [form])
 
   return (
-    <div className="my">
+    <div className="set-main">
       <Form
         form={form}
         name="advanced_search"
@@ -55,4 +56,4 @@ function Main() {
   );
 }
 
-export default Main;
+export default Set;

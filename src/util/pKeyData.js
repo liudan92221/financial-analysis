@@ -301,6 +301,26 @@ const keyArr =  [
     "describe": "单位：元"
   },
   {
+    "keywordName": "ZD0121N",
+    "keywordAlias": "财务费用：利息收入",
+    "dataType": "decimal",
+    "suggestName": "ZD0121N",
+    "name": "ZD0121N",
+    "suggestAlias": "财务费用：利息收入",
+    "alias": "财务费用：利息收入",
+    "describe": "单位：元"
+  },
+  {
+    "keywordName": "ZD0122N",
+    "keywordAlias": "财务费用：利息支出",
+    "dataType": "decimal",
+    "suggestName": "ZD0122N",
+    "name": "ZD0122N",
+    "suggestAlias": "财务费用：利息支出",
+    "alias": "财务费用：利息支出",
+    "describe": "单位：元"
+  },
+  {
     "keywordName": "F056N",
     "keywordAlias": "研发费用",
     "dataType": "DECIMAL(18,2)",
@@ -672,9 +692,11 @@ const keyArr =  [
   }
 ]
 
+export const pNameMap = {}
 export const pKeyMap = {}
 for(const item of keyArr) {
-  pKeyMap[item.alias] = item
+  pNameMap[item.alias] = item
+  pKeyMap[item.keywordName] = item
 }
 
 export default keyArr

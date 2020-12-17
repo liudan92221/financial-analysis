@@ -25,6 +25,7 @@ function Main() {
     add,
     remove,
     onChange,
+    reload,
   } = useTabData()
 
   return (
@@ -90,6 +91,7 @@ function Main() {
           activeKey={activeKey}
           onChange={onChange}
           remove={remove}
+          reload={reload}
         />
       </div>
     </div>

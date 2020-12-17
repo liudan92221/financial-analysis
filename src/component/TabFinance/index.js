@@ -33,7 +33,7 @@ export const useTabData = () => {
     setTabData(newTabData)
   }, [tabData, activeKey, setTabData])
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     util.getLocalData().then((data) => {
       if (data) {
         const arr = []
@@ -43,7 +43,11 @@ export const useTabData = () => {
         setTabData(arr)
       }
     })
-  }, [])
+  }, [setTabData])
+
+  useEffect(() => {
+    reload()
+  }, [reload])
 
   return {
     tabData,
@@ -51,11 +55,12 @@ export const useTabData = () => {
     add,
     remove,
     onChange,
+    reload,
   }
 }
 
 function TabFinance(props) {
-  const { tabData = [], activeKey, onChange, remove } = props
+  const { tabData = [], activeKey, onChange, remove, reload } = props
   const onEdit = useCallback((index, action) => {
     if (typeof remove === 'function' && action === 'remove') {
       remove(index)
@@ -71,11 +76,14 @@ function TabFinance(props) {
       type="editable-card"
     >
       {tabData.map((item, index) => {
-        const title = item.name
-        return <TabPane tab={title} key={index + ''}>
+        const name = item.name
+        return <TabPane tab={name} key={index + ''}>
           <FinanceTable
-            title={title}
+            name={name}
+            title={item.title}
+            code={item.code}
             data={item}
+            reload={reload}
           />
         </TabPane>
       })}

@@ -932,4 +932,11 @@ const keyArr = [
   }
 ]
 
+export const cNameMap = {}
+export const cKeyMap = {}
+for(const item of keyArr) {
+  cNameMap[item.alias] = item
+  cKeyMap[item.keywordName] = item
+}
+
 export default keyArr
