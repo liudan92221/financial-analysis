@@ -1,10 +1,62 @@
+import { useState, useCallback, useEffect } from 'react';
 import { Form, Input, DatePicker, Row, Col, Button, message } from 'antd';
 import moment from 'moment';
-import { useGetFinanceData } from '../util/index'
-import TabFinance, { useTabData } from '../component/TabFinance'
+import { useStock } from '../util/index'
+import TabFinance from '../component/TabFinance'
 import './index.less'
 
 const { RangePicker } = DatePicker;
+
+export const useTabData = () => {
+  const { stockData, requestStockData, loading } = useStock()
+
+  const [tabData, setTabData] = useState(() => {
+    return []
+  })
+  const [activeKey, setActiveKey] = useState(() => {
+    return '0'
+  })
+
+  const onChange = useCallback((activeKey) => {
+    setActiveKey(activeKey)
+  }, [])
+
+  const add = useCallback((data) => {
+    const newTabData = [ ...tabData ]
+    newTabData.push(data)
+    setActiveKey(newTabData.length - 1 + '')
+    setTabData(newTabData)
+  }, [tabData, setTabData])
+
+  const remove = useCallback((index) => {
+    const newTabData = [ ...tabData ]
+    newTabData.splice(index, 1)
+    if (activeKey === index) {
+      setActiveKey('0')
+    }
+    setTabData(newTabData)
+  }, [tabData, activeKey, setTabData])
+
+  useEffect(() => {
+    if (stockData) {
+      const arr = []
+      for (let key in stockData) {
+        arr.push(stockData[key])
+      }
+      setTabData(arr)
+    }
+  }, [stockData])
+
+  return {
+    tabData,
+    activeKey,
+    add,
+    remove,
+    onChange,
+    requestStockData,
+    loading,
+  }
+}
 
 const dateFormat = 'YYYY';
 
@@ -15,17 +67,13 @@ function Main() {
   const [form] = Form.useForm()
 
   const {
-    getCurrentTableData,
-    loading,
-  } = useGetFinanceData()
-
-  const {
     tabData,
     activeKey,
     add,
     remove,
     onChange,
-    reload,
+    requestStockData,
+    loading,
   } = useTabData()
 
   return (
@@ -67,7 +115,7 @@ function Main() {
                   if (scode && date[0] && date[1]) {
                     const sdate = date[0].format('YYYY') + '0101'
                     const edate = date[1].format('YYYY') + '1231'
-                    getCurrentTableData({
+                    requestStockData({
                       scode,
                       sdate,
                       edate,
@@ -91,7 +139,6 @@ function Main() {
           activeKey={activeKey}
           onChange={onChange}
           remove={remove}
-          reload={reload}
         />
       </div>
     </div>

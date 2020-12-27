@@ -2,8 +2,10 @@ import { useCallback, useState } from 'react';
 import { Typography, Tooltip, Divider } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import html2canvas from 'html2canvas'
-import { nameMap, fKeyArr, pKeyArr, cKeyArr, assetsMap, numberToThousands } from './config'
-
+import XLSX from 'xlsx'
+import store from '../store/index'
+import { nameMap, nameTokeyMap, fKeyArr, pKeyArr, cKeyArr, assetsMap, numberToThousands } from './config'
+const { useStockState, useStockSetState } = store
 const { Paragraph, Text } = Typography;
 const DefaultWidth = 140
 
@@ -20,7 +22,7 @@ function defaultColumns(item) {
     dataIndex: item.keywordName,
     key: item.keywordName,
     render(text) {
-      if (typeof text === 'number') {
+      if (typeof text === 'number' || item.dataType.match(/decimal/gi)) {
         return <div className='text-right'>{numberToThousands(text)}</div>
       }
       return text
@@ -464,16 +466,37 @@ const util = {
     })
   },
   getLocalData() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       let data = window.localStorage.getItem('table_data')
       try {
         if (data) {
           data = JSON.parse(data)
+          resolve(data)
+        } else {
+          resolve({})
         }
       } catch(err) {
         console.error(err)
+        reject(err)
       }
-      resolve(data)
+    })
+  },
+  getLocalList() {
+    return util.getLocalData().then((data) => {
+      const list = []
+      for (let key in data) {
+        list.push(data[key])
+      }
+      return list
+    })
+  },
+  removeLocalItemData(name) {
+    return util.getLocalData().then((data) => {
+      if (data[name]) {
+        data[name] = null
+        delete data[name]
+        return util.setLocalData(data)
+      }
     })
   },
   setItemData(title, code, type, item) {
@@ -482,29 +505,78 @@ const util = {
       p: 'pData',
       c: 'cData',
     }
-    return util.getLocalData().then((data) => {
-      const name = util.getName(title, code)
-      const itemData = data[name] || {
-        name: name,
-        title: title,
-        code: code,
-      }
-      const typeData = itemData[map[type]] || []
-      let notOldData = true
-      for (let i = 0;i < typeData.length; i++) {
-        const rowData = typeData[i]
-        if (rowData.ENDDATE === item.ENDDATE) {
-          typeData[i] = item
-          notOldData = false
-          break
+    if (!map[type]) {
+      return Promise.reject(new Error('type is error'))
+    }
+    const itemData = {
+      code,
+      title,
+    }
+    itemData[map[type]] = [item]
+    
+    return util.setData(itemData)
+  },
+  mergeItemData(localDataArr, itemArr) {
+    const localMap = {}
+    for (let localItem of localDataArr) {
+      localMap[localItem.ENDDATE] = localItem
+    }
+    for (let item of itemArr) {
+      const ENDDATE = item.ENDDATE
+      if (ENDDATE) {
+        const localItem = localMap[ENDDATE]
+        if (localItem) {
+          for (let key in item) {
+            if (item[key] !== null || item[key] !== undefined) {
+              localItem[key] = item[key]
+            }
+          }
+        } else {
+          localDataArr.push(item)
         }
       }
-      if (notOldData) {
-        typeData.push(item)
+    }
+    localDataArr.sort((a, b) => {
+      return new Date(a.ENDDATE).getTime() - new Date(b.ENDDATE).getTime()
+    })
+    return localDataArr
+  },
+  setData(data) {
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data)
+      } catch(err) {
+        return Promise.reject(err)
       }
-      itemData[map[type]] = typeData
-      data[name] = itemData
-      return util.setLocalData(data)
+    }
+    if (!Array.isArray(data)) {
+      data = [data]
+    }
+    return util.getLocalData().then((localData) => {
+      for (let item of data) {
+        if (item.code && item.title) {
+          const name = util.getName(item.title, item.code)
+          const localItemData = localData[name] || {
+            name,
+            title: item.title,
+            code: item.code,
+            fData: [],
+            pData: [],
+            cData: [],
+          }
+          if (item.fData) {
+            localItemData.fData = util.mergeItemData(localItemData.fData, item.fData)
+          }
+          if (item.pData) {
+            localItemData.pData = util.mergeItemData(localItemData.pData, item.pData)
+          }
+          if (item.cData) {
+            localItemData.cData = util.mergeItemData(localItemData.cData, item.cData)
+          }
+          localData[name] = localItemData
+        }
+      }
+      return util.setLocalData(localData)
     })
   },
 
@@ -524,30 +596,221 @@ const util = {
     }
     return new Blob(byteArrays, {type: mime})
   },
+  downClick(fileName, blob) {
+    const aLink = document.createElement('a')
+    aLink.download = fileName || ''
+    aLink.href = URL.createObjectURL(blob)
+    aLink.click()
+    URL.revokeObjectURL(blob)
+  },
   downPageImg(node, fileName) {
-    return html2canvas(node).then(function(canvas) {
-      const aLink = document.createElement('a')
+    return html2canvas(node).then((canvas) => {
       const img = canvas.toDataURL('image/png').split(',')[1]
       const imgFile = util.base64ToBlob(img, 'image/png')
-      aLink.download = fileName || '报表'
-      aLink.href = URL.createObjectURL(imgFile)
-      aLink.click()
-      URL.revokeObjectURL(imgFile)
+      util.downClick(fileName || '报表', imgFile)
     })
   },
+  downJSON(fileName, json) {
+    const content = JSON.stringify(json)
+    const blob = new Blob([content], {type: 'application/json'})
+    util.downClick(fileName || '报表', blob)
+  },
+
+  nameDataFormat(data, type) {
+    const keyArrMap = {
+      f: fKeyArr,
+      p: pKeyArr,
+      c: cKeyArr,
+    }
+    const keyArr = keyArrMap[type]
+    const itemData = {}
+    if (keyArr) {
+      for (let kValue of keyArr) {
+        const alias = kValue.alias
+        if (data[alias] !== null || data[alias] !== undefined) {
+          itemData[kValue.keywordName] = data[alias]
+        } else {
+          itemData[kValue.keywordName] = null
+        }
+      }
+    }
+    return itemData
+  },
+
+  readFile(file, type) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = function(e) {
+        const data = e.target.result
+        resolve(data)
+      }
+      reader.onerror = function(err) {
+        console.error(err)
+        reject(err)
+      }
+      const map = {
+        text: 'readAsText',
+        arrayBuffer: 'readAsArrayBuffer',
+        binary: 'readAsBinaryString',
+        base64: 'readAsDataURL',
+      }
+      const func = map[type] || map.text
+      reader[func](file)
+    })
+  },
+
+  readFileJSON(file) {
+    return util.readFile(file, 'text')
+  },
+
+  readFileXLSX(file) {
+    return util.readFile(file, 'binary').then((data) => {
+      const typeMap = {
+        f: 'fData',
+        p: 'pData',
+        c: 'cData',
+      }
+      const name = file.name
+      if (name) {
+        const nameArr = name.match(/(.+)\((\d+)\)/)
+        if (nameArr && name.match(/\.xlsx$/)) {
+          const title = nameArr[1]
+          const code = nameArr[2]
+          if (title && code) {
+            const workbook = XLSX.read(data, {type: 'binary'})
+            const jsonData = {
+              name: util.getName(title, code),
+              title: title,
+              code: code,
+            }
+            for (let sheetName of workbook.SheetNames) {
+              const type = nameTokeyMap[sheetName]
+              const typeData = typeMap[type]
+              if (typeData) {
+                const dataSource = []
+                const list = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
+                for (let item of list) {
+                  const itemData = util.nameDataFormat(item, type)
+                  dataSource.push(itemData)
+                }
+                jsonData[typeData] = dataSource
+              }
+            }
+            return jsonData
+          }
+        }
+      }
+      throw new Error('文件名有误，格式：股票名称(股票代码).xlsx')
+    })
+  },
+
+  makeXlsxSheet({title, header, dataSource}) {
+    return new Promise((resolve, reject) => {
+      try {
+        const sheet = XLSX.utils.json_to_sheet(dataSource, {
+          header: header
+        })
+        resolve({
+          title,
+          sheet,
+        })
+      } catch(err) {
+        reject(err)
+      }
+    })
+  },
+
+  dataToXlsxData(data) {
+    function getXlsxData(title, data, keyArr) {
+      const header = []
+      const dataSource = []
+      for (let item of keyArr) {
+        header.push(item.alias)
+      }
+      for (let item of data) {
+        const dataItem = {}
+        for (let keyItem of keyArr) {
+          const key = keyItem.keywordName
+          dataItem[keyItem.alias] = item[key] || ''
+        }
+        dataSource.push(dataItem)
+      }
+      return {
+        title,
+        header,
+        dataSource,
+      }
+    }
+    const fData = data.fData || []
+    const pData = data.pData || []
+    const cData = data.cData || []
+    return [
+      getXlsxData(nameMap.f, fData, fKeyArr),
+      getXlsxData(nameMap.p, pData, pKeyArr),
+      getXlsxData(nameMap.c, cData, cKeyArr),
+    ]
+  },
+
+  exportXLSX(fileName, data) {
+    if (!Array.isArray(data)) {
+      data = [data]
+    }
+    const sheetP = []
+    for (let item of data) {
+      if (item.title && Array.isArray(item.header) && Array.isArray(item.dataSource)) {
+        const itemP = util.makeXlsxSheet({
+          title: item.title,
+          header: item.header,
+          dataSource: item.dataSource,
+        })
+        sheetP.push(itemP)
+      }
+    }
+    // 字符串转ArrayBuffer
+    function s2ab(s) {
+      const buf = new ArrayBuffer(s.length)
+      const view = new Uint8Array(buf)
+      for (let i = 0; i < s.length; ++i) {
+        view[i] = s.charCodeAt(i) & 0xFF
+      }
+      return buf
+    }
+    
+    return Promise.all(sheetP).then((dataList) => {
+      const sheetNames = []
+      const sheets = {}
+      for (let item of dataList) {
+        sheetNames.push(item.title)
+        sheets[item.title] = item.sheet
+      }
+      // 生成excel的配置项
+      const wbout = XLSX.write({
+        SheetNames: sheetNames,
+        Sheets: sheets,
+      }, {
+        bookType: 'xlsx', // 要生成的文件类型
+        bookSST: false, // 是否生成Shared String Table，官方解释是，如果开启生成速度会下降，但在低版本IOS设备上有更好的兼容性
+        type: 'binary'
+      })
+      return new Blob([s2ab(wbout)], {type: 'application/octet-stream'})
+    }).then((blob) => {
+      util.downClick(`${fileName || '报表'}.xlsx`, blob)
+    })
+  }
 }
 
-export const useGetFinanceData = () => {
-  const [tableData, setTableData] = useState(() => {
-    return null
-  })
+export default util
+
+export const useRequestStockData = () => {
+  const setStockStateData = useStockSetState()
   const [error, setError] = useState(() => {
     return null
   })
   const [loading, setLoading] = useState(() => {
     return false
   })
-  const getCurrentTableData = useCallback(({
+
+  const requestStockData = useCallback(({
     scode,
     sdate,
     edate
@@ -561,40 +824,83 @@ export const useGetFinanceData = () => {
         token
       }
       return Promise.all([
-        util.getLocalData(),
         util.getFinanceData(param),
         util.getProfitData(param),
         util.getCashData(param),
-      ]).then(([localData, fData, pData, cData]) => {
+      ]).then(([fData, pData, cData]) => {
         const {title, code} = util.getTitleAndCode(fData)
-        if (!localData) {
-          localData = {}
-        }
         const name = util.getName(title, code)
-        localData[name] = {
-          name: name,
-          title: title,
-          code: code,
+        return util.setData({
+          title,
+          code,
+          name,
           fData: util.filterData(fData),
           pData: util.filterData(pData),
           cData: util.filterData(cData),
-        }
-        setTableData(localData[name])
-        util.setLocalData(localData)
-        setLoading(false)
-        return localData[name]
+        }).then((localData) => {
+          setStockStateData(localData)
+          setLoading(false)
+          return localData[name]
+        })
       })
     }).catch((err) => {
       setError(err)
       setLoading(false)
     })
-  }, [])
+  }, [setStockStateData])
   return {
-    getCurrentTableData,
-    tableData,
+    requestStockData,
     error,
     loading,
   }
 }
 
-export default util
+export const useStock = function() {
+  const {
+    requestStockData,
+    error,
+    loading,
+  } = useRequestStockData()
+
+  const [stockData, setStockStateData] = useStockState()
+  const reloadStock = useCallback(() => {
+    return util.getLocalData().then((data) => {
+      if (data) {
+        setStockStateData(data)
+      }
+    })
+  }, [setStockStateData])
+
+  const setStockItem = useCallback((title, code, type, item) => {
+    return util.setItemData(title, code, type, item).then((data) => {
+      if (data) {
+        setStockStateData(data)
+      }
+    })
+  }, [setStockStateData])
+
+  const setStockData = useCallback((data) => {
+    return util.setData(data).then((localData) => {
+      setStockStateData(localData)
+    })
+  }, [setStockStateData])
+
+  const initStockData = useCallback(() => {
+    return util.getLocalData().then((localData) => {
+      setStockStateData(localData)
+    })
+  }, [setStockStateData])
+
+  return {
+    stockData,
+    setStockStateData,
+    reloadStock,
+    setStockItem,
+    setStockData,
+    initStockData,
+
+    requestStockData,
+    error,
+    loading,
+  }
+}

@@ -1,12 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { RecoilRoot } from 'recoil'
 import HashRouter, { history } from './history'
 import App from './App';
 
 import './index.less';
 
 function Main() {
-  return <App history={history} />
+  return <RecoilRoot>
+    <App history={history} />
+  </RecoilRoot>
 }
 
 ReactDOM.render(

@@ -15,8 +15,8 @@ const arrMap = {
 }
 
 const formItemLayout = {
-  labelCol: { span: 10 },
-  wrapperCol: { span: 10 },
+  labelCol: { span: 12 },
+  wrapperCol: { span: 8 },
 };
 
 function EditModal(props) {
@@ -70,7 +70,7 @@ function EditModal(props) {
 
   return <Modal
     className="edit-modal"
-    width={1000}
+    width={800}
     title={title}
     visible={props.visible}
     okText={okText}

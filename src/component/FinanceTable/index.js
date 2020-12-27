@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Typography, Table, Collapse, Button } from 'antd';
 import EditModal from '../EditModal'
-import util from '../../util/index'
+import util, { useStock } from '../../util/index';
 import './index.less';
 
 const { Title, Link } = Typography;
@@ -10,6 +10,7 @@ const { Panel } = Collapse;
 const linkStyle = {marginRight: 4}
 
 function useDataAndList(data, columnMap) {
+  const { setStockItem } = useStock()
   const [dataSource, setDataSource] = useState(() => {
     return []
   })
@@ -37,6 +38,7 @@ function useDataAndList(data, columnMap) {
     pData,
     cData,
     renderList,
+    setStockItem,
   }
 }
 
@@ -48,8 +50,6 @@ function useEditModal() {
     return {}
   })
   const onClick = useCallback(({type, record, index, ctrlType}) => {
-    console.log(index)
-    console.log(record)
     setModalData({
       type, record, index, ctrlType
     })
@@ -119,7 +119,7 @@ function getID() {
 }
 
 function FinanceTable(props) {
-  const { name, data, title, code, reload } = props
+  const { name, data, title, code } = props
 
   const [btnLoading, setBtnLoading] = useState(() => {
     return false
@@ -141,6 +141,7 @@ function FinanceTable(props) {
     pData,
     cData,
     renderList,
+    setStockItem,
   } = useDataAndList(data, columnMap)
 
   return (
@@ -202,9 +203,8 @@ function FinanceTable(props) {
         onCancel={onCancel}
         onOk={onCancel}
         onSave={({type, record}) => {
-          util.setItemData(title, code, type, record).then(() => {
+          setStockItem(title, code, type, record).then(() => {
             onCancel()
-            reload()
           })
         }}
       />

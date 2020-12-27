@@ -8,6 +8,12 @@ export const nameMap = {
   c: '现金流量表',
 }
 
+export const nameTokeyMap = {
+  '资产负债表': 'f',
+  '利润表': 'p',
+  '现金流量表': 'c',
+}
+
 export const fKeyArr = _fKeyArr
 export const pKeyArr = _pKeyArr
 export const cKeyArr = _cKeyArr
@@ -22,6 +28,10 @@ export const keyMap = {
 }
 
 export const numberToThousands = (_num) => {
+  _num = Number(_num)
+  if (typeof _num.toLocaleString === 'function') {
+    return _num.toLocaleString('en-US')
+  }
   let strNum = (_num || 0).toString()
   let sign = ''
   if (_num < 0) {
@@ -881,7 +891,7 @@ const netProfit = {
   algorithm(record) {
     let value = '--'
     if (record.pData) {
-      value = record.pData[pNameMap['净利润'].keywordName] || 0
+      value = Number(record.pData[pNameMap['净利润'].keywordName] || 0).toFixed(2)
     }
     return {
       value: value,
@@ -956,6 +966,901 @@ const constructionProgressFake = {
     }
     return {
       value: `${value1}% & ${value2}% (在建工程 / 资产总计 = ${value3}%)`,
+      type,
+    }
+  }
+}
+
+const operatingIncome = {
+  title: '营业收入',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业收入',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['其中：营业收入'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const operatingIncomeRate = {
+  title: '营业收入增长率',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '(本期营业收入 - 上期营业收入) / 上期营业收入',
+  describe: [
+    '>10% 公司成长较快，前景较好',
+    '0% ~ 10% 公司成长缓慢，一般小于10%就可以淘汰',
+    '<0% 公司处于衰退之中',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData && record.pData.prevYear) {
+      const value1 = operatingIncome.algorithm(record).value * 100
+      const value2 = (record.pData.prevYear[pNameMap['其中：营业收入'].keywordName] || 0) * 100
+      value = ((value1 - value2) / value2 * 100).toFixed(2)
+      if (value > 10) {
+        type = 0
+      } else if (value > 0 && value <= 10) {
+        type = 2
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const operatingCost = {
+  title: '营业成本',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业成本',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['其中：营业成本'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const grossMargin = {
+  title: '毛利率',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '(营业收入 - 营业成本) / 营业收入',
+  describe: [
+    '>40% 高毛利率说明公司的产品或服务竞争力较强',
+    '<40% 中低毛利率说明公司的产品或服务竞争力较差，一般淘汰',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData) {
+      const value1 = (record.pData[pNameMap['其中：营业收入'].keywordName] || 0) * 100
+      const value2 = (record.pData[pNameMap['其中：营业成本'].keywordName] || 0) * 100
+      value = ((value1 - value2) / value1 * 100).toFixed(2)
+      if (value > 40) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const grossMarginRate = {
+  title: '毛利率波动幅度',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '(本期毛利率 - 上年毛利率) / 上年毛利率',
+  describe: [
+    '<10% 优秀的公司',
+    '>20% 公司经营或财务造假的风险大',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData && record.pData.prevYear) {
+      const value1 = grossMargin.algorithm(record).value * 100
+      const value2 = (record.pData.prevYear[pNameMap['其中：营业收入'].keywordName] || 0) * 100
+      const value3 = (record.pData.prevYear[pNameMap['其中：营业成本'].keywordName] || 0) * 100
+      const value4 = (value2 - value3) / value2 * 100 * 100
+      value = ((value1 - value4) / value4 * 100).toFixed(2)
+      if (value < 10) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const salesExpense = {
+  title: '销售费用',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '销售费用',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['销售费用'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const managementExpense = {
+  title: '管理费用',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '管理费用',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['管理费用'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const rdExpense = {
+  title: '研发费用',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '研发费用',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['研发费用'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const financialExpense = {
+  title: '财务费用',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '财务费用',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['财务费用'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const periodExpense = {
+  title: '期间费用',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '销售费用 + 管理费用 + 研发费用 + 财务费用',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      const value1 = salesExpense.algorithm(record).value * 100
+      const value2 = managementExpense.algorithm(record).value * 100
+      const value3 = rdExpense.algorithm(record).value * 100
+      const value4 = financialExpense.algorithm(record).value * 100
+      if (value4 > 0) {
+        value = ((value1 + value2 + value3 + value4) / 100).toFixed(2)
+      } else {
+        value = ((value1 + value2 + value3) / 100).toFixed(2)
+      }
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const periodExpenseRate = {
+  title: '期间费用率',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '(销售费用 + 管理费用 + 研发费用 + 财务费用) / 营业收入',
+  describe: [],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      const value1 = periodExpense.algorithm(record).value * 100
+      const value2 = operatingIncome.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const periodExpenseGrossMarginRate = {
+  title: '期间费用率 / 毛利率',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '期间费用率 / 毛利率',
+  describe: [
+    '<40% 成本控制能力好，属于优秀的企业',
+    '>40% 成本控制能力差，一般把大于60%的公司淘汰掉',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData) {
+      const value1 = periodExpenseRate.algorithm(record).value * 100
+      const value2 = grossMargin.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value < 40) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const salesExpenseRate = {
+  title: '销售费用 / 营业收入',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '销售费用 / 营业收入',
+  describe: [
+    '<15% 产品比较容易销售，销售风险相对较小',
+    '15% ~ 30% 产品比较难销售，销售风险相对较大',
+    '>30% 产品销售难度大，销售风险大，淘汰',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData) {
+      const value1 = salesExpense.algorithm(record).value * 100
+      const value2 = operatingIncome.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value < 15) {
+        type = 0
+      } else if (value >= 15 && value < 30) {
+        type = 2
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const taxesAndSurcharges = {
+  title: '营业税金及附加',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业税金及附加',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['营业税金及附加'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const operatingProfit = {
+  title: '营业利润',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业利润',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['三、营业利润'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const mainProfit = {
+  title: '主营利润',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业收入 - 营业成本 - 期间费用 - 营业税金及附加',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      const value1 = operatingIncome.algorithm(record).value * 100
+      const value2 = operatingCost.algorithm(record).value * 100
+      const value3 = periodExpense.algorithm(record).value * 100
+      const value4 = taxesAndSurcharges.algorithm(record).value * 100
+      value = ((value1 - value2 - value3 - value4) / 100).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const mainProfitRate = {
+  title: '主营利润率',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '主营利润 / 营业收入',
+  describe: [
+    '>15% 主业盈利能力强',
+    '<15% 主业盈利能力弱，不具备持续竞争力，淘汰',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData) {
+      const value1 = mainProfit.algorithm(record).value * 100
+      const value2 = operatingIncome.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value > 15) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const mainProfitOperatingProfitRate = {
+  title: '主营利润 / 营业利润',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '主营利润 / 营业利润',
+  describe: [
+    '>80% 利润质量高',
+    '<80% 利润质量低，不具备持续竞争力，淘汰',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData) {
+      const value1 = mainProfit.algorithm(record).value * 100
+      const value2 = operatingProfit.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value > 80) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const nonOperatingIncome = {
+  title: '营业外收入',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业外收入',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['营业外收入'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const operatingExpenses = {
+  title: '减：营业外支出',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '减：营业外支出',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['减：营业外支出'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const netNonOperatingIncome = {
+  title: '营业外收入净额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业外收入 - 减：营业外支出',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      const value1 = nonOperatingIncome.algorithm(record).value * 100
+      const value2 = operatingExpenses.algorithm(record).value * 100
+      value = ((value1 - value2) / 100).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const totalProfit = {
+  title: '利润总额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '利润总额',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['四、利润总额'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const netNonOperatingIncomeTotalProfitRate = {
+  title: '营业外收入净额 / 利润总额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '营业外收入净额 / 利润总额',
+  describe: [
+    '<5% 利润质量好，越小越好',
+    '>5% 利润质量差，越大越差',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData) {
+      const value1 = netNonOperatingIncome.algorithm(record).value * 100
+      const value2 = totalProfit.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value < 5) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const netProfitToParent = {
+  title: '归属于母公司所有者的净利润',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '归属于母公司所有者的净利润',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.pData) {
+      value = Number(record.pData[pNameMap['归属于母公司所有者的净利润'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const netProfitToParentRate = {
+  title: '归属于母公司所有者的净利润增长率',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '归属于母公司所有者的净利润增长率',
+  describe: [
+    '>10% 盈利能力持续性好',
+    '<10% 盈利能力持续性差，淘汰掉，小于0属于衰落中',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.pData && record.pData.prevYear) {
+      const value1 = netProfitToParent.algorithm(record).value * 100
+      const value2 = (record.pData.prevYear[pNameMap['归属于母公司所有者的净利润'].keywordName] || 0) * 100
+      value = ((value1 - value2) / value2 * 100).toFixed(2)
+      if (value > 10) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const netCashFlowFromOperatingActivities = {
+  title: '经营活动产生的现金流量净额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '经营活动产生的现金流量净额',
+  describe: [
+    '越大越好 ',
+    '<0 直接淘汰',
+  ],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['经营活动产生的现金流量净额'].keywordName] || 0).toFixed(2)
+      if (value > 0) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const netCashFlowsFromInvestingActivities = {
+  title: '投资活动产生的现金流量净额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '投资活动产生的现金流量净额',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['投资活动产生的现金流量净额'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const netCashFlowFromFinancingActivities = {
+  title: '筹资活动产生的现金流量净额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '筹资活动产生的现金流量净额',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['筹资活动产生的现金流量净额'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const cashType = {
+  title: '公司现金流量类型',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '公司现金流量类型',
+  describe: [
+    '正负负 和 正正负 两种类型为选择对象',
+    '不是 正负负 和 正正负 两种类型',
+  ],
+  type: 'string',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData) {
+      value = ''
+      const value1 = netCashFlowFromOperatingActivities.algorithm(record).value
+      const value2 = netCashFlowsFromInvestingActivities.algorithm(record).value
+      const value3 = netCashFlowFromFinancingActivities.algorithm(record).value
+      if (value1 > 0) {
+        value += '正'
+      } else {
+        value += '负'
+      }
+      if (value2 > 0) {
+        value += '正'
+      } else {
+        value += '负'
+      }
+      if (value3 > 0) {
+        value += '正'
+      } else {
+        value += '负'
+      }
+      if (value1 > 0 && value3 < 0) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const netCashFlowFromOperatingActivitiesRate = {
+  title: '经营活动产生的现金流量净额增长率',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '经营活动产生的现金流量净额增长率：(本期经营活动产生的现金流量净额 - 上期经营活动产生的现金流量净额) / 上期经营活动产生的现金流量净额',
+  describe: [
+    '>0% 公司造血能力在提高',
+    '<0% 公司造血能力在下降',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData && record.cData.prevYear) {
+      const value1 = netCashFlowFromOperatingActivities.algorithm(record).value * 100
+      const value2 = (record.cData.prevYear[cNameMap['经营活动产生的现金流量净额'].keywordName] || 0) * 100
+      value = ((value1 - value2) / value2 * 100).toFixed(2)
+      if (value > 0) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const cashReceivedFromSellingGoodsAndProvidingLaborServices = {
+  title: '销售商品、提供劳务收到的现金',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '销售商品、提供劳务收到的现金',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['销售商品、提供劳务收到的现金'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const cashReceivedFromSellingGoodsAndProvidingLaborServicesRate = {
+  title: '销售商品、提供劳务收到的现金 / 营业收入',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '销售商品、提供劳务收到的现金 / 营业收入',
+  describe: [
+    '>100% 公司营业收入质量高，>110%更好',
+    '<100% 公司营业收入质量不高',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData) {
+      const value1 = cashReceivedFromSellingGoodsAndProvidingLaborServices.algorithm(record).value * 100
+      const value2 = operatingIncome.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value > 100) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const netCashFlowFromOperatingActivitiesNetProfitRate = {
+  title: '经营活动产生的现金流量净额 / 净利润',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '经营活动产生的现金流量净额 / 净利润',
+  describe: [
+    '>100% 净利润含金量高',
+    '<100% 净利润含金量低',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData) {
+      const value1 = netCashFlowFromOperatingActivities.algorithm(record).value * 100
+      const value2 = netProfit.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value > 100) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const cashPaidForPurchaseAndConstruction = {
+  title: '购建固定资产、无形资产和其他长期资产支付的现金',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '购建固定资产、无形资产和其他长期资产支付的现金',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['购建固定资产、无形资产和其他长期资产支付的现金'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const cashPaidForPurchaseAndConstructionRate = {
+  title: '购建固定资产、无形资产和其他长期资产支付的现金 / 经营活动产生的现金流量净额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '购建固定资产、无形资产和其他长期资产支付的现金 / 经营活动产生的现金流量净额',
+  describe: [
+    '3% ~ 60% 公司增长潜力较大，并且风险相对较小',
+    '>60% 风险相对较大',
+    '<3% 或 >100% 前者回报较低，后者风险较大',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData) {
+      const value1 = cashPaidForPurchaseAndConstruction.algorithm(record).value * 100
+      const value2 = netCashFlowFromOperatingActivities.algorithm(record).value * 100
+      value = (value1 / value2 * 100).toFixed(2)
+      if (value > 3 && value < 60) {
+        type = 0
+      } if (value >= 60 && value < 100) {
+        type = 1
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const cashPaidForDividendsProfitsInterestPayments = {
+  title: '分配股利、利润或偿付利息支付的现金',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '分配股利、利润或偿付利息支付的现金',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['分配股利、利润或偿付利息支付的现金'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const cashPaidForDividendsProfitsInterestPaymentsRate = {
+  title: '分配股利、利润或偿付利息支付的现金 / 经营活动产生的现金流量净额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '分配股利、利润或偿付利息支付的现金 / 经营活动产生的现金流量净额',
+  describe: [
+    '20% ~ 70% 优秀公司的分红',
+    '<20% 公司要么能力有问题，要么品质有问题，>70% 分红比例很难长期持续',
+  ],
+  type: 'percentage',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData) {
+      const value1 = cashPaidForDividendsProfitsInterestPayments.algorithm(record).value * 100
+      const value2 = netCashFlowFromOperatingActivities.algorithm(record).value * 100
+      value = ((value1 / value2) * 100).toFixed(2)
+      if (value > 20 && value < 70) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const netIncreaseInCashAndCashEquivalents = {
+  title: '现金及现金等价物净增加额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '现金及现金等价物净增加额',
+  describe: [],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['五、现金及现金等价物净增加额'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
+    }
+  }
+}
+
+const cashDividends = {
+  title: '加分红后的现金及现金等价物净增加额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '现金及现金等价物净增加额 + 分配股利、利润或偿付利息支付的现金',
+  describe: [
+    '>0 这种公司才有被选择的资格',
+    '<0 直接淘汰',
+  ],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    let type = 3
+    if (record.cData) {
+      const value1 = cashPaidForDividendsProfitsInterestPayments.algorithm(record).value * 100
+      const value2 = netIncreaseInCashAndCashEquivalents.algorithm(record).value * 100
+      value = ((value1 + value2) / 100).toFixed(2)
+      if (value > 0) {
+        type = 0
+      }
+    }
+    return {
+      value: value,
+      type,
+    }
+  }
+}
+
+const balanceCashEquivalents = {
+  title: '期末现金及现金等价物余额',
+  key: fNameMap['货币资金'].keywordName,
+  tips: '期末现金及现金等价物余额',
+  describe: [
+    '一般钱越多的公司，抗风险能力越强，现金分红的能力也越强',
+  ],
+  type: 'number',
+  algorithm(record) {
+    let value = '--'
+    let type = 0
+    if (record.cData) {
+      value = Number(record.cData[cNameMap['期末现金及现金等价物余额'].keywordName] || 0).toFixed(2)
+    }
+    return {
+      value: value,
       type,
     }
   }
@@ -1096,6 +2001,119 @@ export const assetsMap = [
       endDate,
       goodwill,
       goodwillRate,
+    ]
+  },
+  {
+    title: '营业收入和毛利率分析',
+    keys: [
+      endDate,
+      operatingIncome,
+      operatingIncomeRate,
+      operatingCost,
+      grossMargin,
+      grossMarginRate,
+    ]
+  },
+  {
+    title: '期间费用分析',
+    keys: [
+      endDate,
+      operatingIncome,
+      {
+        ...grossMargin,
+        describe: []
+      },
+      salesExpense,
+      managementExpense,
+      rdExpense,
+      financialExpense,
+      periodExpense,
+      periodExpenseRate,
+      periodExpenseGrossMarginRate,
+      salesExpenseRate,
+    ]
+  },
+  {
+    title: '主营利润率分析',
+    keys: [
+      endDate,
+      operatingIncome,
+      operatingCost,
+      periodExpense,
+      taxesAndSurcharges,
+      operatingProfit,
+      mainProfit,
+      mainProfitRate,
+      mainProfitOperatingProfitRate,
+    ]
+  },
+  {
+    title: '营业外收入分析',
+    keys: [
+      endDate,
+      nonOperatingIncome,
+      operatingExpenses,
+      netNonOperatingIncome,
+      totalProfit,
+      netNonOperatingIncomeTotalProfitRate,
+    ]
+  },
+  {
+    title: '归属母公司利润分析',
+    keys: [
+      endDate,
+      netProfitToParent,
+      netProfitToParentRate,
+    ]
+  },
+  {
+    title: '经营活动产生的现金流量分析',
+    keys: [
+      endDate,
+      netCashFlowFromOperatingActivities,
+      netCashFlowFromOperatingActivitiesRate,
+      cashReceivedFromSellingGoodsAndProvidingLaborServices,
+      operatingIncome,
+      cashReceivedFromSellingGoodsAndProvidingLaborServicesRate,
+      netProfit,
+      netCashFlowFromOperatingActivitiesNetProfitRate,
+      cashPaidForPurchaseAndConstruction,
+      cashPaidForPurchaseAndConstructionRate,
+    ]
+  },
+  {
+    title: '现金分红情况分析',
+    keys: [
+      endDate,
+      {
+        ...netCashFlowFromOperatingActivities,
+        describe: []
+      },
+      cashPaidForDividendsProfitsInterestPayments,
+      cashPaidForDividendsProfitsInterestPaymentsRate,
+    ]
+  },
+  {
+    title: '公司现金流动类型分析',
+    keys: [
+      endDate,
+      {
+        ...netCashFlowFromOperatingActivities,
+        describe: []
+      },
+      netCashFlowsFromInvestingActivities,
+      netCashFlowFromFinancingActivities,
+      cashType,
+    ]
+  },
+  {
+    title: '公司现金增长分析',
+    keys: [
+      endDate,
+      netIncreaseInCashAndCashEquivalents,
+      cashPaidForDividendsProfitsInterestPayments,
+      cashDividends,
+      balanceCashEquivalents,
     ]
   },
 ]
